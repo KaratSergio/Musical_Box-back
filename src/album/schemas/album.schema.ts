@@ -5,8 +5,8 @@ export type AlbumDocument = HydratedDocument<Album>;
 
 @Schema()
 export class Album {
-  @Prop()
-  name: string;
+  @Prop({ required: true })
+  title: string;
 
   @Prop()
   author: string;
