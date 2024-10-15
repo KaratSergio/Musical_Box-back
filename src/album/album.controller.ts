@@ -1,18 +1,42 @@
-import { Controller, Delete, Get, Post } from '@nestjs/common';
+import {
+  Controller,
+  Delete,
+  Get,
+  Post,
+  Patch,
+  Body,
+  Param,
+} from '@nestjs/common';
+import { AlbumService } from './album.service';
+import { AlbumDto } from './dto/album-dto';
+import { Types } from 'mongoose';
 
 @Controller('/album')
 export class AlbumController {
-  @Post()
-  createAlbum() {}
+  constructor(private albumService: AlbumService) {}
 
-  @Get()
-  getAllAlbums() {
-    return 'test album controller';
+  @Post()
+  createAlbum(@Body() dto: AlbumDto) {
+    return this.albumService.createAlbum(dto);
   }
 
   @Get()
-  getAlbum() {}
+  getAllAlbums() {
+    return this.albumService.getAllAlbums();
+  }
 
-  @Delete()
-  deleteAlbum() {}
+  @Get(':id')
+  getAlbum(@Param('id') id: Types.ObjectId) {
+    return this.albumService.getAlbum(id);
+  }
+
+  @Patch(':id')
+  updateAlbum(@Param('id') id: Types.ObjectId, @Body() dto: AlbumDto) {
+    return this.albumService.updateAlbum(id, dto);
+  }
+
+  @Delete(':id')
+  deleteAlbum(@Param('id') id: Types.ObjectId) {
+    return this.albumService.deleteAlbum(id);
+  }
 }
