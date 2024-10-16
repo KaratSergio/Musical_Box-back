@@ -7,11 +7,14 @@ import { AddCommentDto } from './dto/add-comment.dto';
 import { Song, SongDocument } from './schemas/song.schema';
 import { Comment, CommentDocument } from './schemas/comment.schema';
 
+import { FileService, FileType } from '../file/file.service';
+
 @Injectable()
 export class SongService {
   constructor(
     @InjectModel(Song.name) private songModel: Model<SongDocument>,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
+    private fileService: FileService,
   ) {}
 
   async addSong(
@@ -19,11 +22,14 @@ export class SongService {
     picture?: Express.Multer.File,
     audio?: Express.Multer.File,
   ): Promise<Song> {
+    const audioPath = this.fileService.createFile(FileType.AUDIO, audio);
+    const picturePath = this.fileService.createFile(FileType.IMAGE, picture);
+
     const songData = {
       ...dto,
       listens: 0,
-      picturePath: picture ? picture[0].path : null,
-      audioPath: audio ? audio[0].path : null,
+      picture: picturePath ? picturePath : null,
+      audio: audioPath ? audioPath : null,
     };
 
     const song = await this.songModel.create(songData);
