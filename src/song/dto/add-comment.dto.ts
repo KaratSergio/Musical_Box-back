@@ -1,14 +1,14 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 
-export class AddSongDto {
+export class AddCommentDto {
   @IsString()
   @IsNotEmpty()
-  readonly title: string;
+  readonly username: string;
 
   @IsString()
   @IsNotEmpty()
-  readonly artist: string;
-
-  @IsString()
   readonly text: string;
+
+  @IsString()
+  readonly songId: string;
 }
