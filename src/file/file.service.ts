@@ -25,5 +25,16 @@ export class FileService {
     }
   }
 
-  //   removeFile(fileName: string) {}
+  removeFile(fileName: string): void {
+    try {
+      const filePath = path.resolve(__dirname, '..', 'static', fileName);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      } else {
+        throw new HttpException('File not found', HttpStatus.NOT_FOUND);
+      }
+    } catch (e) {
+      throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

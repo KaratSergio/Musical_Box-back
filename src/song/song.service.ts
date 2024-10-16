@@ -36,8 +36,11 @@ export class SongService {
     return song;
   }
 
-  async getAllSongs(): Promise<Song[]> {
-    const songs = await this.songModel.find();
+  async getAllSongs(count = 10, offset = 0): Promise<Song[]> {
+    const songs = await this.songModel
+      .find()
+      .skip(Number(offset))
+      .limit(Number(count));
     return songs;
   }
 
@@ -58,7 +61,17 @@ export class SongService {
   }
 
   async deleteSong(id: Types.ObjectId): Promise<Types.ObjectId> {
-    const song = await this.songModel.findByIdAndDelete(id);
+    const song = await this.songModel.findById(id);
+
+    if (song.audio) {
+      this.fileService.removeFile(song.audio);
+    }
+    if (song.picture) {
+      this.fileService.removeFile(song.picture);
+    }
+
+    await this.songModel.findByIdAndDelete(id);
+
     return song._id;
   }
 
@@ -72,5 +85,18 @@ export class SongService {
     song.comments.push(comment._id);
     await song.save();
     return comment;
+  }
+
+  async listen(id: Types.ObjectId) {
+    const song = await this.songModel.findById(id);
+    song.listens += 1;
+    song.save();
+  }
+
+  async search(query: string): Promise<Song[]> {
+    const songs = await this.songModel.find({
+      name: { $regex: new RegExp(query, 'i') },
+    });
+    return songs;
   }
 }

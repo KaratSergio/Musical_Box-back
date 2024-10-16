@@ -1,4 +1,5 @@
 import {
+  Query,
   Body,
   Controller,
   Delete,
@@ -15,7 +16,7 @@ import { Types } from 'mongoose';
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AddCommentDto } from './dto/add-comment.dto';
 
-@Controller('/song')
+@Controller('/songs')
 export class SongController {
   constructor(private songService: SongService) {}
 
@@ -38,13 +39,18 @@ export class SongController {
   }
 
   @Get()
-  getAllSongs() {
-    return this.songService.getAllSongs();
+  getAllSongs(@Query('count') count: number, @Query('offset') offset: number) {
+    return this.songService.getAllSongs(count, offset);
   }
 
   @Get(':id')
   getSong(@Param('id') id: Types.ObjectId) {
     return this.songService.getSong(id);
+  }
+
+  @Get('/search')
+  search(@Query('query') query: string) {
+    return this.songService.search(query);
   }
 
   @Patch(':id')
@@ -60,5 +66,10 @@ export class SongController {
   @Post('/comment')
   addComment(@Body() dto: AddCommentDto) {
     return this.songService.addComment(dto);
+  }
+
+  @Post('/listen/:id')
+  listen(@Param('id') id: Types.ObjectId) {
+    return this.songService.listen(id);
   }
 }

@@ -11,7 +11,7 @@ import { AlbumService } from './album.service';
 import { AlbumDto } from './dto/album-dto';
 import { Types } from 'mongoose';
 
-@Controller('/album')
+@Controller('/albums')
 export class AlbumController {
   constructor(private albumService: AlbumService) {}
 
