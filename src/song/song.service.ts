@@ -7,33 +7,49 @@ import { AddCommentDto } from './dto/add-comment.dto';
 import { Song, SongDocument } from './schemas/song.schema';
 import { Comment, CommentDocument } from './schemas/comment.schema';
 
-import { FileService, FileType } from '../file/file.service';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { FileType } from 'src/cloudinary/cloudinary.interfaces';
 
 @Injectable()
 export class SongService {
   constructor(
     @InjectModel(Song.name) private songModel: Model<SongDocument>,
     @InjectModel(Comment.name) private commentModel: Model<CommentDocument>,
-    private fileService: FileService,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   async addSong(
     dto: AddSongDto,
-    picture?: Express.Multer.File,
-    audio?: Express.Multer.File,
+    files: { image?: Express.Multer.File[]; audio?: Express.Multer.File[] },
   ): Promise<Song> {
-    const audioPath = this.fileService.createFile(FileType.AUDIO, audio);
-    const picturePath = this.fileService.createFile(FileType.IMAGE, picture);
+    try {
+      const audioFile = files.audio ? files.audio[0] : null;
+      const pictureFile = files.image ? files.image[0] : null;
 
-    const songData = {
-      ...dto,
-      listens: 0,
-      picture: picturePath ? picturePath : null,
-      audio: audioPath ? audioPath : null,
-    };
+      if (!audioFile) {
+        throw new Error('Audio file is required');
+      }
 
-    const song = await this.songModel.create(songData);
-    return song;
+      const audioUrl = await this.cloudinaryService.uploadFile(
+        audioFile,
+        FileType.AUDIO,
+      );
+      const pictureUrl = pictureFile
+        ? await this.cloudinaryService.uploadFile(pictureFile, FileType.IMAGE)
+        : null;
+
+      const songData = {
+        ...dto,
+        listens: 0,
+        picture: pictureUrl,
+        audio: audioUrl,
+      };
+
+      const song = await this.songModel.create(songData);
+      return song;
+    } catch (error) {
+      throw new Error(`Error adding song: ${error.message || error}`);
+    }
   }
 
   async getAllSongs(count = 10, offset = 0): Promise<Song[]> {
@@ -64,10 +80,10 @@ export class SongService {
     const song = await this.songModel.findById(id);
 
     if (song.audio) {
-      this.fileService.removeFile(song.audio);
+      await this.cloudinaryService.deleteFile(song.audio, FileType.AUDIO);
     }
     if (song.picture) {
-      this.fileService.removeFile(song.picture);
+      await this.cloudinaryService.deleteFile(song.picture, FileType.IMAGE);
     }
 
     await this.songModel.findByIdAndDelete(id);
@@ -90,7 +106,7 @@ export class SongService {
   async listen(id: Types.ObjectId) {
     const song = await this.songModel.findById(id);
     song.listens += 1;
-    song.save();
+    await song.save();
   }
 
   async search(query: string): Promise<Song[]> {

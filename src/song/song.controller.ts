@@ -23,19 +23,19 @@ export class SongController {
   @Post()
   @UseInterceptors(
     FileFieldsInterceptor([
-      { name: 'picture', maxCount: 1 },
+      { name: 'image', maxCount: 1 },
       { name: 'audio', maxCount: 1 },
     ]),
   )
   addSong(
     @UploadedFiles()
     files: {
-      picture?: Express.Multer.File[];
+      image?: Express.Multer.File[];
       audio?: Express.Multer.File[];
     },
     @Body() dto: AddSongDto,
   ) {
-    return this.songService.addSong(dto, files.picture[0], files.audio[0]);
+    return this.songService.addSong(dto, files);
   }
 
   @Get()
