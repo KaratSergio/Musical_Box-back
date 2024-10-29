@@ -3,6 +3,7 @@ import multer from 'multer';
 import { v2 as cloudinary } from 'cloudinary';
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { FileType } from './cloudinary.interfaces';
+import path from 'path';
 
 @Injectable()
 export class CloudinaryStorageService {
@@ -25,7 +26,10 @@ export class CloudinaryStorageService {
         format: allowedFormats.includes(file.mimetype.split('/')[1])
           ? file.mimetype.split('/')[1]
           : undefined,
-        public_id: file.originalname,
+        public_id: path.basename(
+          file.originalname,
+          path.extname(file.originalname),
+        ),
         resource_type: file.fieldname === FileType.AUDIO ? 'video' : 'image',
       };
     },
